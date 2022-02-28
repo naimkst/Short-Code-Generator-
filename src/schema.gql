@@ -1,0 +1,50 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserEntity {
+  id: Int!
+  email: String!
+  first_name: String
+  last_name: String
+  phone: String
+  password: String
+  avatar: String
+  status: Int
+  verify_code: String
+  email_verify_status: Int
+}
+
+type Query {
+  getAllUsers: [UserEntity!]!
+  findOne(email: String!): UserEntity!
+}
+
+type Mutation {
+  userRegister(user: CreateUserDto!): UserEntity!
+  userEmailVerification(email: String!, user: UserVerifyDto!): UserEntity!
+}
+
+input CreateUserDto {
+  email: String!
+  first_name: String
+  last_name: String
+  phone: String
+  password: String
+  avatar: String
+  status: Int
+  verify_code: String
+  email_verify_status: Int
+}
+
+input UserVerifyDto {
+  email: String
+  first_name: String
+  last_name: String
+  phone: String
+  password: String
+  avatar: String
+  status: Int
+  verify_code: String
+  email_verify_status: Int
+}
