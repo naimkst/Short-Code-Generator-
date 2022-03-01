@@ -31,6 +31,7 @@ type ShorterEntity {
 type Query {
   getAllUsers: [UserEntity!]!
   findOne(email: String!): UserEntity!
+  userLogout: UserEntity!
   getAllShorder: [ShorterEntity!]!
 }
 
@@ -39,6 +40,7 @@ type Mutation {
   userEmailVerification(email: String!, user: UserVerifyDto!): UserEntity!
   userLogin(email: String!, password: String!): UserEntity!
   createShorter(shorter: CreateShorterDto!): ShorterEntity!
+  createShorterForUser(shorter: CreateShorterDto!): ShorterEntity!
 }
 
 input CreateUserDto {

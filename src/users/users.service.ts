@@ -104,26 +104,34 @@ export class UsersService {
     const getUser = await this.databaseService.user.findUnique({
       where: { email },
     });
-
     //JWT token authorize
     var token = await jwt.sign({ email: getUser.email }, process.env.JWT_TOKEN, { expiresIn: '1h' });
-
     //Again check the email and password
     if (!getUser.email) {
       throw new NotFoundException('User not found');
+    }
+    //Check User Status
+    if (getUser.status == 0 && getUser.email_verify_status == 0 ) {
+      throw new NotFoundException('Please Verfity your email');
     }
 
     //Condition the password is correct
     if (!(await bcrypt.compare(password, getUser.password))) {
       throw new NotFoundException('Wrong password');
     }
-
     //Set Cookie
     context.res.cookie('jwt', token);
-
     //Remove Password Field
     delete getUser.password;
-
     return getUser;
   }
+
+  //User Logout
+  async userLogout(context) {
+    const cookieClear = context.res.clearCookie('jwt');
+    return {
+      message: 'Logout Successfully',
+    }
+  }
+
 }

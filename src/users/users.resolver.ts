@@ -39,4 +39,10 @@ export class UsersResolver {
   async userLogin(@Context() context: GraphQLExecutionContext, @Args('email') email: string, @Args('password') password: string): Promise<UserEntity>{
     return this.usersService.userLogin(context, email, password);
   }
+
+  //User Logout
+  @Query(() => UserEntity)
+  async userLogout(@Context() context: GraphQLExecutionContext){
+    return this.usersService.userLogout(context);
+  }
 }
