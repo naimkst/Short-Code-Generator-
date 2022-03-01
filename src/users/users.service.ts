@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
@@ -6,14 +11,29 @@ import { CreateUserDto } from './dto/create-user-dto';
 import * as nodemailer from 'nodemailer';
 import * as randomstring from 'randomstring';
 import { UserVerifyDto } from './dto/user-email-verification-dto';
+import * as jwt from 'jsonwebtoken';
+import { AuthGuard } from 'src/auth.guard';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+  ) {}
 
   //Get All Users
-  getAllUsers(): Promise<UserEntity[]> {
-    return this.databaseService.user.findMany();
+  async getAllUsers(context): Promise<UserEntity[]> {
+
+    const cookie = context.req.cookies['jwt'];
+    try {
+      const decoded = jwt.verify(cookie, process.env.JWT_TOKEN);
+      const user = await this.databaseService.user.findMany();
+      console.log(user);
+      return user;
+
+    } catch (error) {
+      throw new NotFoundException('You are not authorized user!');
+    }
+    
   }
 
   //Find By Email
@@ -85,5 +105,35 @@ export class UsersService {
     } else {
       throw new BadRequestException('Something is wrong!');
     }
+  }
+
+  //User Login
+  async userLogin( context, email: string, password: string ): Promise<UserEntity> {
+
+    //Get user from email
+    const getUser = await this.databaseService.user.findUnique({
+      where: { email },
+    });
+
+    //JWT token authorize
+    var token = await jwt.sign({ email: getUser.email }, process.env.JWT_TOKEN, { expiresIn: '1h' });
+
+    //Again check the email and password
+    if (!getUser.email) {
+      throw new NotFoundException('User not found');
+    }
+
+    //Condition the password is correct
+    if (!(await bcrypt.compare(password, getUser.password))) {
+      throw new NotFoundException('Wrong password');
+    }
+
+    //Set Cookie
+    context.res.cookie('jwt', token);
+
+    //Remove Password Field
+    delete getUser.password;
+
+    return getUser;
   }
 }

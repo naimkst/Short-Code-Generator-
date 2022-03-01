@@ -23,6 +23,7 @@ type Query {
 type Mutation {
   userRegister(user: CreateUserDto!): UserEntity!
   userEmailVerification(email: String!, user: UserVerifyDto!): UserEntity!
+  userLogin(email: String!, password: String!): UserEntity!
 }
 
 input CreateUserDto {

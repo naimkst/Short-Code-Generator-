@@ -1,4 +1,6 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Args, Context, GraphQLExecutionContext, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { AuthGuard } from 'src/auth.guard';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UserVerifyDto } from './dto/user-email-verification-dto';
 import { UserEntity } from './entities/user.entity';
@@ -9,8 +11,9 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => [UserEntity])
-  getAllUsers(): Promise<UserEntity[]> {
-    return this.usersService.getAllUsers();
+  @UseGuards(AuthGuard)
+  getAllUsers(@Context() context: GraphQLExecutionContext): Promise<UserEntity[]> {
+    return this.usersService.getAllUsers(context);
   }
 
   //Find by email address
@@ -29,5 +32,11 @@ export class UsersResolver {
   @Mutation(() => UserEntity)
   async userEmailVerification(@Args('email') email: string, @Args('user') user: UserVerifyDto): Promise<UserEntity>{
     return this.usersService.emailVerification(email, user);
+  }
+
+  //User Login
+  @Mutation(() => UserEntity)
+  async userLogin(@Context() context: GraphQLExecutionContext, @Args('email') email: string, @Args('password') password: string): Promise<UserEntity>{
+    return this.usersService.userLogin(context, email, password);
   }
 }
