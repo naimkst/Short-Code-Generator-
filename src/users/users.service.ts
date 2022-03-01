@@ -22,18 +22,8 @@ export class UsersService {
 
   //Get All Users
   async getAllUsers(context): Promise<UserEntity[]> {
-
-    const cookie = context.req.cookies['jwt'];
-    try {
-      const decoded = jwt.verify(cookie, process.env.JWT_TOKEN);
-      const user = await this.databaseService.user.findMany();
-      console.log(user);
-      return user;
-
-    } catch (error) {
-      throw new NotFoundException('You are not authorized user!');
-    }
-    
+    const user = await this.databaseService.user.findMany();
+    return user;
   }
 
   //Find By Email

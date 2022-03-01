@@ -15,15 +15,30 @@ type UserEntity {
   email_verify_status: Int
 }
 
+type ShorterEntity {
+  id: Int!
+  url: String!
+  short_url: String
+  unique_url: String
+  public: Boolean
+  expire_date: Boolean
+  visits: String
+  userId: Int
+  status: Int
+  published: Boolean
+}
+
 type Query {
   getAllUsers: [UserEntity!]!
   findOne(email: String!): UserEntity!
+  getAllShorder: [ShorterEntity!]!
 }
 
 type Mutation {
   userRegister(user: CreateUserDto!): UserEntity!
   userEmailVerification(email: String!, user: UserVerifyDto!): UserEntity!
   userLogin(email: String!, password: String!): UserEntity!
+  createShorter(shorter: CreateShorterDto!): ShorterEntity!
 }
 
 input CreateUserDto {
@@ -48,4 +63,16 @@ input UserVerifyDto {
   status: Int
   verify_code: String
   email_verify_status: Int
+}
+
+input CreateShorterDto {
+  url: String!
+  short_url: String
+  unique_url: String
+  public: Boolean
+  expire_date: Boolean
+  visits: String
+  userId: Int
+  status: Int
+  published: Boolean
 }

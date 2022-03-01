@@ -6,6 +6,7 @@ import { join } from 'path';
 import { DatabaseModule } from './database/database.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ShorterModule } from './shorter/shorter.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     UsersModule,
     DatabaseModule,
+    ShorterModule,
   ],
   controllers: [],
   providers: [],
