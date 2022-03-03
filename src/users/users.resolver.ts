@@ -12,8 +12,8 @@ export class UsersResolver {
 
   @Query(() => [UserEntity])
   @UseGuards(AuthGuard)
-  getAllUsers(@Context() context: GraphQLExecutionContext): Promise<UserEntity[]> {
-    return this.usersService.getAllUsers(context);
+  getUsers(@Context() context: GraphQLExecutionContext): Promise<UserEntity[]> {
+    return this.usersService.getUsers(context);
   }
 
   //Find by email address
@@ -45,4 +45,19 @@ export class UsersResolver {
   async userLogout(@Context() context: GraphQLExecutionContext){
     return this.usersService.userLogout(context);
   }
+
+  //User Update
+  @Mutation(() => UserEntity)
+  async userUpdate(@Args('id') id: number, @Args('user') user: CreateUserDto): Promise<UserEntity>{
+    return this.usersService.userUpdate(id, user);
+  }
+
+  
+  //Get All user For Admin
+  @Query(() => [UserEntity])
+  getAllUser(): Promise<UserEntity[]> {
+    return this.usersService.getAllUser();
+  }
+
+  
 }

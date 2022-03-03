@@ -25,6 +25,9 @@ export class UserEntity {
   @Field(() => String, { nullable: true })
   avatar: string;
 
+  @Field(() => Boolean, { nullable: true })
+  isAdmin: boolean;
+
   @Field(() => Int, { nullable: true })
   status: number;
 

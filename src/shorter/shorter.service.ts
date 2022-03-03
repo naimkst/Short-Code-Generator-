@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as randomstring from 'randomstring';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateShorterDto } from './dto/create-shorter-dto';
@@ -7,49 +7,104 @@ import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class ShorterService {
-  constructor(private readonly databaseService: DatabaseService){}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   //Find All Shorter Links
-  getAllShorder(): Promise<ShorterEntity[]>{
-    return this.databaseService.shorter.findMany();
+  async getAllShorder(context): Promise<ShorterEntity[]> {
+    try {
+      const getUserEmail = context.req.cookies['jwt'];
+      const decoded = jwt.verify(getUserEmail, process.env.JWT_TOKEN);
+      const userEmail = decoded['email'];
+      const loginUser = await this.databaseService.user.findMany({
+        where: {
+          email: userEmail,
+        },
+      });
+      return this.databaseService.shorter.findMany({
+        where: {
+          userId: loginUser[0]['id'],
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException('User not found! You are not logged in!');
+    }
   }
 
   //Create Shorter Link
-  createShorter(shorter: CreateShorterDto): Promise<ShorterEntity>{
+  async createShorter(shorter: CreateShorterDto): Promise<ShorterEntity> {
     const randomEmailCode = randomstring.generate(6);
-    console.log(randomEmailCode);
-    return this.databaseService.shorter.create({
-      data:{
-        ...shorter,
-        published: true,
-        short_url: randomEmailCode
+    const requestLink = shorter.url;
+
+    try {
+      const existingLink = await this.databaseService.shorter.findFirst({
+        where: { url: requestLink },
+      });
+
+      if (existingLink.url == requestLink && existingLink.url != null) {
+        return await this.databaseService.shorter.findFirst({
+          where: { url: requestLink },
+        });
       }
-    });
+    } catch (error) {
+      return this.databaseService.shorter.create({
+        data: {
+          ...shorter,
+          published: true,
+          short_url: randomEmailCode,
+        },
+      });
+    }
   }
 
   //Create Shorter Link for UserEntity
-  async createShorterForUser(context, shorter: CreateShorterDto): Promise<ShorterEntity>{
-
+  async createShorterForUser(
+    context,
+    shorter: CreateShorterDto,
+  ): Promise<ShorterEntity> {
     //Random Link ID
     const randomEmailCode = randomstring.generate(6);
 
     //Get JWT Token
-    const cookie = context.req.cookies['jwt']
+    const cookie = context.req.cookies['jwt'];
     const decoded = jwt.verify(cookie, process.env.JWT_TOKEN);
-    const getEmail = decoded['email'];
+    const getEmail = decoded['user']['email'];
 
     //Find User
-    const getUser = await this.databaseService.user.findUnique({where: {email: getEmail}});
+    const getUser = await this.databaseService.user.findUnique({
+      where: { email: getEmail },
+    });
 
-    console.log(getUser);
-    return this.databaseService.shorter.create({
-      data:{
-        ...shorter,
-        published: true,
-        short_url: randomEmailCode,
-        userId: getUser.id,
-        status: 1
+    const requestLink = shorter.url;
+
+    try {
+      const existingLink = await this.databaseService.shorter.findFirst({
+        where: { url: requestLink },
+      });
+
+      if (existingLink.url == requestLink && existingLink.url != null) {
+        return await this.databaseService.shorter.findFirst({
+          where: { url: requestLink },
+        });
       }
+    } catch (error) {
+      return await this.databaseService.shorter.create({
+        data: {
+          ...shorter,
+          published: true,
+          short_url: randomEmailCode,
+          userId: getUser.id,
+          status: 1,
+        },
+      });
+    }
+  }
+
+  //All Shorter links for admin
+  async getAllShorderForAdmin(): Promise<ShorterEntity[]> {
+    return this.databaseService.shorter.findMany({
+      where: {
+        published: true,
+      },
     });
   }
 }

@@ -10,6 +10,7 @@ type UserEntity {
   phone: String
   password: String
   avatar: String
+  isAdmin: Boolean
   status: Int
   verify_code: String
   email_verify_status: Int
@@ -29,16 +30,19 @@ type ShorterEntity {
 }
 
 type Query {
-  getAllUsers: [UserEntity!]!
+  getUsers: [UserEntity!]!
   findOne(email: String!): UserEntity!
   userLogout: UserEntity!
+  getAllUser: [UserEntity!]!
   getAllShorder: [ShorterEntity!]!
+  getAllShorderForAdmin: [ShorterEntity!]!
 }
 
 type Mutation {
   userRegister(user: CreateUserDto!): UserEntity!
   userEmailVerification(email: String!, user: UserVerifyDto!): UserEntity!
   userLogin(email: String!, password: String!): UserEntity!
+  userUpdate(id: Float!, user: CreateUserDto!): UserEntity!
   createShorter(shorter: CreateShorterDto!): ShorterEntity!
   createShorterForUser(shorter: CreateShorterDto!): ShorterEntity!
 }
@@ -50,6 +54,7 @@ input CreateUserDto {
   phone: String
   password: String
   avatar: String
+  isAdmin: Boolean
   status: Int
   verify_code: String
   email_verify_status: Int
@@ -62,6 +67,7 @@ input UserVerifyDto {
   phone: String
   password: String
   avatar: String
+  isAdmin: Boolean
   status: Int
   verify_code: String
   email_verify_status: Int
